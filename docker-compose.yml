@@ -1,0 +1,51 @@
+nginx:
+    container_name: container-nginx
+    image: garciadiazjaime/container-nginx
+    links:
+        - api-events:api-events
+        - website-events:website-events
+    ports:
+        - "8888:80"
+
+website-events:
+    container_name: website-events
+    image: garciadiazjaime/website-events
+    links:
+        - api-events:api-events
+    ports:
+        - "49160:3000"
+    environment:
+        API_URL: http://api-events
+
+api-events:
+    container_name: api-events
+    image: garciadiazjaime/api-events
+    links:
+        - mongodb:mongo
+    ports:
+        - "49161:80"
+    environment:
+        DB_URL: mongodb://mongo/events
+        PORT: 80
+
+etl-events:
+    container_name: etl-events
+    image: garciadiazjaime/etl-events
+    links:
+        - api-events:api-events
+    environment:
+        API_URL: http://api-events/
+
+redis:
+    container_name: redis
+    image: redis
+    ports:
+        - "6379:6379"
+
+mongodb:
+    container_name: mongodb
+    image: mongo
+    ports:
+        - "27017:27017"
+    volumes:
+        - './data:/data/db'
